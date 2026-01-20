@@ -22,9 +22,9 @@ stages:
     jobs:
       - deployment: pythonDeploy
         displayName: Python Deployment
-        environment: 
-          name: devenv
-          resourceType: VM
+        environment: devenv
+          # name: devenv
+          # resourceType: VM
         strategy: 
           runOnce:
             deploy:
