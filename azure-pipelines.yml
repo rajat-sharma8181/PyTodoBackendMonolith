@@ -1,0 +1,48 @@
+trigger: none
+
+pool: app_agent_pool
+
+stages:
+  - stage: Publish
+    displayName: Publish Artifact
+    jobs:
+      - job: 
+        displayName: Publish Job
+        steps:
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: '$(Pipeline.Workspace)'
+            artifact: 'pyart'
+            publishLocation: 'pipeline'
+
+# CD
+
+  - stage: Deploy
+    displayName: Deploy to VM
+    jobs:
+      - deployment: pythonDeploy
+        displayName: Python Deployment
+        environment: 
+          name: devenv
+          resourceType: VM
+        strategy: 
+          runOnce:
+            deploy:
+              steps:
+              - task: DownloadPipelineArtifact@2
+                inputs:
+                  buildType: 'current'
+                  artifactName: 'pyart'
+                  targetPath: '$(Pipeline.Workspace)'
+
+              - task: Bash@3
+                inputs:
+                  targetType: 'inline'
+                  script: |
+                    sudo apt update
+                    sudo apt install python3-pip -y
+                    pip3 install uvicorn
+                    uvicorn --version
+                    sudo cp $(Pipeline.Workspace)/app.py /home/admin007/app/
+
+              
